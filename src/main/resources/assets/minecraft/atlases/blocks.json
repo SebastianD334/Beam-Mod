@@ -1,0 +1,8 @@
+{
+	"sources": [
+		{
+			"type": "single",
+			"resource": "beam-mod:entity/beam_preview"
+		}
+	]
+}
