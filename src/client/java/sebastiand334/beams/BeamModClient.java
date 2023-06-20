@@ -29,20 +29,23 @@ public class BeamModClient implements ClientModInitializer {
     }
 
     public static void onLeftClick() {
-        var player = MinecraftClient.getInstance().player;
-        if (player == null) return;
-
-        if (player.getMainHandStack().getItem() == BeamMod.ROASTED_COCOA_BEAMS) {
+        if (isHoldingBeamItem()) {
             BeamPlacement.stopPlacingBeam();
         }
     }
 
-    private void renderBeamPreview(WorldRenderContext context) {
-        var start = BeamPlacement.getBeamStart();
-        if (start == null) return;
+    public static boolean isHoldingBeamItem() {
+        var player = MinecraftClient.getInstance().player;
+        if (player == null) return false;
+        return player.getMainHandStack().getItem() == BeamMod.ROASTED_COCOA_BEAMS;
+    }
 
+    private void renderBeamPreview(WorldRenderContext context) {
+        if (!isHoldingBeamItem()) return;
+        
         var mc = MinecraftClient.getInstance();
         assert mc.player != null;
+
         var placement = BeamPlacement.target(mc.player);
 
         var matrices = context.matrixStack();
