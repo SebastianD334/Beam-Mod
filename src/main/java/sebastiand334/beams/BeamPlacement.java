@@ -83,7 +83,7 @@ public final class BeamPlacement {
     public static BeamPlacement target(Entity player) {
         var start = BeamPlacement.getBeamStart();
         if (start == null) {
-            var target = player.raycast(40d, 0f, false);
+            var target = player.raycast(MAX_LENGTH, 0f, false);
             return new BeamPlacement(snapToGrid(target.getPos()), UP);
         }
 
