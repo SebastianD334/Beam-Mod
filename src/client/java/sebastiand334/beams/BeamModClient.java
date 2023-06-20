@@ -25,6 +25,15 @@ public class BeamModClient implements ClientModInitializer {
         WorldRenderEvents.AFTER_TRANSLUCENT.register(this::renderBeamPreview);
     }
 
+    public static void onLeftClick() {
+        var player = MinecraftClient.getInstance().player;
+        if (player == null) return;
+
+        if (player.getMainHandStack().getItem() == BeamMod.ROASTED_COCOA_BEAMS) {
+            BeamPlacement.stopPlacingBeam();
+        }
+    }
+
     private void renderBeamPreview(WorldRenderContext context) {
         var start = BeamPlacement.getBeamStart();
         if (start == null) return;
