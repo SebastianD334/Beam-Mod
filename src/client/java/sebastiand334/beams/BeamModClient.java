@@ -51,7 +51,6 @@ public class BeamModClient implements ClientModInitializer {
         var matrices = context.matrixStack();
         var camera = context.gameRenderer().getCamera().getPos();
         matrices.push();
-        matrices.translate(-camera.x, -camera.y, -camera.z);
 
         var consumers = context.consumers();
         assert consumers != null;
@@ -63,9 +62,9 @@ public class BeamModClient implements ClientModInitializer {
 
         var epsilon = 1e-3f; // avoid z-fighting
         var beamParts = ModelPartBuilder.create().cuboid(
-            min.x - epsilon,
-            min.y - epsilon,
-            min.z - epsilon,
+            (float) (min.x - camera.x * 16 - epsilon),
+            (float) (min.y - camera.y * 16 - epsilon),
+            (float) (min.z - camera.z * 16 - epsilon),
             max.x - min.x + 2 * epsilon,
             max.y - min.y + 2 * epsilon,
             max.z - min.z + 2 * epsilon
@@ -92,13 +91,13 @@ public class BeamModClient implements ClientModInitializer {
     }
 
     private static class PreviewLayer extends RenderLayer {
-        private static final ImmutableList<RenderPhase> phases = ImmutableList.of(COLOR_PROGRAM, ALWAYS_DEPTH_TEST, DISABLE_CULLING, TRANSLUCENT_TRANSPARENCY);
+        private static final ImmutableList<RenderPhase> phases = ImmutableList.of(COLOR_PROGRAM, DISABLE_CULLING, TRANSLUCENT_TRANSPARENCY);
 
         private final boolean ignoresDepth;
 
         public PreviewLayer(String name, boolean ignoresDepth) {
             super(
-                "beam_preview",
+                name,
                 VertexFormats.POSITION_COLOR,
                 VertexFormat.DrawMode.QUADS,
                 131072,
@@ -115,7 +114,14 @@ public class BeamModClient implements ClientModInitializer {
             super.startDrawing();
             if (this.ignoresDepth) {
                 RenderSystem.disableDepthTest();
+                RenderSystem.depthMask(false);
             }
+        }
+        
+        @Override
+        public void endDrawing() {
+            super.endDrawing();
+            RenderSystem.depthMask(true);
         }
     }
 }
