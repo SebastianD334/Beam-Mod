@@ -47,7 +47,8 @@ public final class BeamPlacement {
     }
 
     private static final double GRID_SIZE = 0.25d; // in blocks
-    private static final double BEAM_RADIUS = 0.25d; // in blocks
+    private static final double BEAM_RADIUS = 0.25d;
+    private static final double MAX_LENGTH = 16d;
     @Nullable
     private static Vec3d beamStart;
 
@@ -61,6 +62,10 @@ public final class BeamPlacement {
             snapToGrid(pos.y),
             snapToGrid(pos.z)
         );
+    }
+
+    private static double snapLength(double length) {
+        return Math.max(-MAX_LENGTH, Math.min(MAX_LENGTH, length));
     }
 
     public static void startPlacingBeam(Vec3d start) {
@@ -79,7 +84,7 @@ public final class BeamPlacement {
         var start = BeamPlacement.getBeamStart();
         if (start == null) {
             var target = player.raycast(40d, 0f, false);
-            return new BeamPlacement(target.getPos(), UP);
+            return new BeamPlacement(snapToGrid(target.getPos()), UP);
         }
 
         var pos = player.getClientCameraPosVec(0f);
@@ -88,20 +93,20 @@ public final class BeamPlacement {
         var xDistance = (start.x - pos.x) / dir.x;
         var xDelta = pos.add(dir.multiply(xDistance)).subtract(start);
         Vec3d xCandidate = Math.abs(xDelta.y) > Math.abs(xDelta.z)
-            ? new Vec3d(0d, snapToGrid(xDelta.y), 0d)
-            : new Vec3d(0d, 0d, snapToGrid(xDelta.z));
+            ? new Vec3d(0d, snapLength(xDelta.y), 0d)
+            : new Vec3d(0d, 0d, snapLength(xDelta.z));
 
         var yDistance = (start.y - pos.y) / dir.y;
         var yDelta = pos.add(dir.multiply(yDistance)).subtract(start);
         Vec3d yCandidate = Math.abs(yDelta.x) > Math.abs(yDelta.z)
-            ? new Vec3d(snapToGrid(yDelta.x), 0d, 0d)
-            : new Vec3d(0d, 0d, snapToGrid(yDelta.z));
+            ? new Vec3d(snapLength(yDelta.x), 0d, 0d)
+            : new Vec3d(0d, 0d, snapLength(yDelta.z));
 
         var zDistance = (start.z - pos.z) / dir.z;
         var zDelta = pos.add(dir.multiply(zDistance)).subtract(start);
         Vec3d zCandidate = Math.abs(zDelta.x) > Math.abs(zDelta.y)
-            ? new Vec3d(snapToGrid(zDelta.x), 0d, 0d)
-            : new Vec3d(0d, snapToGrid(zDelta.y), 0d);
+            ? new Vec3d(snapLength(zDelta.x), 0d, 0d)
+            : new Vec3d(0d, snapLength(zDelta.y), 0d);
 
         // find candidate that's closest to pos + d*dir
         var xScore = start.add(xCandidate).subtract(pos).normalize().dotProduct(dir);
@@ -116,6 +121,6 @@ public final class BeamPlacement {
             ? xScore > zScore ? xCandidate : zCandidate
             : yScore > zScore ? yCandidate : zCandidate;
 
-        return new BeamPlacement(start, span);
+        return new BeamPlacement(start, snapToGrid(span));
     }
 }
